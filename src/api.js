@@ -87,3 +87,124 @@ export function checkin({ table, apiKey, apiSecret }) {
     apiSecret
   );
 }
+
+export function getAvailableGames({ apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.get_available_games",
+    "GET",
+    null,
+    apiKey,
+    apiSecret
+  );
+}
+
+export function checkoutGame({ customerSession, gameCopy, apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.checkout_game",
+    "POST",
+    { customer_session: customerSession, game_copy: gameCopy },
+    apiKey,
+    apiSecret
+  );
+}
+
+export function getFirstAvailableCopy({ gameTitle, apiKey, apiSecret }) {
+  return apiCall(
+    `/api/method/boardgame_cafe.api.get_first_available_copy?game_title=${encodeURIComponent(gameTitle)}`,
+    "GET",
+    null,
+    apiKey,
+    apiSecret
+  );
+}
+
+export function createPaymentOrder({ customerSession, apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.create_payment_order",
+    "POST",
+    { customer_session: customerSession },
+    apiKey,
+    apiSecret
+  );
+}
+
+export function verifyPayment({ razorpayOrderId, razorpayPaymentId, razorpaySignature, apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.verify_payment",
+    "POST",
+    {
+      razorpay_order_id: razorpayOrderId,
+      razorpay_payment_id: razorpayPaymentId,
+      razorpay_signature: razorpaySignature,
+    },
+    apiKey,
+    apiSecret
+  );
+}
+
+export function openRazorpayCheckout({ orderData, customerName, customerEmail, onSuccess, onFailure }) {
+  const options = {
+    key: orderData.message.key_id,
+    amount: orderData.message.amount,
+    currency: "INR",
+    name: "BoardGame Café",
+    description: "Table bill payment",
+    order_id: orderData.message.razorpay_order_id,
+    prefill: {
+      name: customerName,
+      email: customerEmail,
+    },
+    theme: {
+      color: "#D64550",
+    },
+    handler: function (response) {
+      onSuccess({
+        razorpayOrderId: response.razorpay_order_id,
+        razorpayPaymentId: response.razorpay_payment_id,
+        razorpaySignature: response.razorpay_signature,
+      });
+    },
+    modal: {
+      ondismiss: function () {
+        onFailure("Payment cancelled.");
+      },
+    },
+  };
+
+  const rzp = new window.Razorpay(options);
+  rzp.open();
+}
+
+export function getSession({ sessionId, apiKey, apiSecret }) {
+  return apiCall(
+    `/api/resource/Customer Session/${sessionId}`,
+    "GET",
+    null,
+    apiKey,
+    apiSecret
+  );
+}
+
+
+
+export function placeFoodOrder({ customerSession, items, apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.place_food_order",
+    "POST",
+    { customer_session: customerSession, items },
+    apiKey,
+    apiSecret
+  );
+}
+
+export function getMenuItems({ apiKey, apiSecret }) {
+  const fields = encodeURIComponent(JSON.stringify(["name", "item_name", "category", "price", "is_available"]));
+  const filters = encodeURIComponent(JSON.stringify([["is_available", "=", 1]]));
+  return apiCall(
+    `/api/resource/Menu Item?fields=${fields}&filters=${filters}`,
+    "GET",
+    null,
+    apiKey,
+    apiSecret
+  );
+}

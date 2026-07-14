@@ -1,11 +1,18 @@
 
+
+
 @import "tailwindcss";
 
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
-  50% { transform: translateY(-14px) rotate(var(--rot, 0deg)); }
+@keyframes settle-in {
+  0% { opacity: 0; transform: scale(0.92) rotate(-2deg) translateY(16px); }
+  60% { opacity: 1; transform: scale(1.02) rotate(0.4deg) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg) translateY(0); }
 }
 
-.die-float {
-  animation: float 6s ease-in-out infinite;
+.box-settle {
+  animation: settle-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .box-settle { animation: none; }
 }
