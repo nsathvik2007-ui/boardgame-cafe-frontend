@@ -1,7 +1,7 @@
 // api.js — reusable API helper for the Board Game Café app.
 // Token-based auth (NO cookies). Handles Frappe-style error extraction.
 
-const BASE_URL = "http://cafe.local:8000";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://cafe.local:8000";
 
 function extractErrorMessage(data, fallback = "Something went wrong") {
   if (!data) return fallback;
