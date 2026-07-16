@@ -76,6 +76,19 @@ export function storeAuth(apiKey, apiSecret) {
 export function clearAuth() {
   localStorage.removeItem("api_key");
   localStorage.removeItem("api_secret");
+  localStorage.removeItem("is_staff");
+}
+
+// Client-side flag only — a fast UI gate to avoid flashing staff screens at
+// non-staff users. The real authorization boundary is require_staff() on the
+// backend, which every staff endpoint below already enforces.
+export function storeIsStaff(isStaff) {
+  if (isStaff) localStorage.setItem("is_staff", "1");
+  else localStorage.removeItem("is_staff");
+}
+
+export function getIsStaff() {
+  return localStorage.getItem("is_staff") === "1";
 }
 
 export function checkin({ table, apiKey, apiSecret }) {
@@ -185,6 +198,35 @@ export function getSession({ sessionId, apiKey, apiSecret }) {
   );
 }
 
+export function endSession({ customerSession, apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.end_session",
+    "POST",
+    { customer_session: customerSession },
+    apiKey,
+    apiSecret
+  );
+}
+
+export function getSessionSummary({ customerSession, apiKey, apiSecret }) {
+  return apiCall(
+    `/api/method/boardgame_cafe.api.get_session_summary?customer_session=${encodeURIComponent(customerSession)}`,
+    "GET",
+    null,
+    apiKey,
+    apiSecret
+  );
+}
+
+export function getInvoice({ customerSession, apiKey, apiSecret }) {
+  return apiCall(
+    `/api/method/boardgame_cafe.api.get_invoice?customer_session=${encodeURIComponent(customerSession)}`,
+    "GET",
+    null,
+    apiKey,
+    apiSecret
+  );
+}
 
 
 export function placeFoodOrder({ customerSession, items, apiKey, apiSecret }) {
@@ -202,6 +244,118 @@ export function getMenuItems({ apiKey, apiSecret }) {
   const filters = encodeURIComponent(JSON.stringify([["is_available", "=", 1]]));
   return apiCall(
     `/api/resource/Menu Item?fields=${fields}&filters=${filters}`,
+    "GET",
+    null,
+    apiKey,
+    apiSecret
+  );
+}
+
+// --- Staff ---
+
+export function getDashboardOverview({ apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.get_dashboard_overview",
+    "GET",
+    null,
+    apiKey,
+    apiSecret
+  );
+}
+
+export function markTableFree({ table, apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.mark_table_free",
+    "POST",
+    { table },
+    apiKey,
+    apiSecret
+  );
+}
+
+export function forceEndSession({ customerSession, apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.force_end_session",
+    "POST",
+    { customer_session: customerSession },
+    apiKey,
+    apiSecret
+  );
+}
+
+export function getKitchenQueue({ apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.get_kitchen_queue",
+    "GET",
+    null,
+    apiKey,
+    apiSecret
+  );
+}
+
+export function updateFoodOrderStatus({ foodOrder, status, apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.update_food_order_status",
+    "POST",
+    { food_order: foodOrder, status },
+    apiKey,
+    apiSecret
+  );
+}
+
+export function getCheckedOutGames({ apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.get_checked_out_games",
+    "GET",
+    null,
+    apiKey,
+    apiSecret
+  );
+}
+
+export function returnGame({ gameCheckout, pieceCheckStatus, apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.return_game",
+    "POST",
+    { game_checkout: gameCheckout, piece_check_status: pieceCheckStatus },
+    apiKey,
+    apiSecret
+  );
+}
+
+export function getFoodInventory({ apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.get_food_inventory",
+    "GET",
+    null,
+    apiKey,
+    apiSecret
+  );
+}
+
+export function restockMenuItem({ menuItem, qty, apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.restock_menu_item",
+    "POST",
+    { menu_item: menuItem, qty },
+    apiKey,
+    apiSecret
+  );
+}
+
+export function getUnpaidSessions({ apiKey, apiSecret }) {
+  return apiCall(
+    "/api/method/boardgame_cafe.api.get_unpaid_sessions",
+    "GET",
+    null,
+    apiKey,
+    apiSecret
+  );
+}
+
+export function getTableQr({ table, apiKey, apiSecret }) {
+  return apiCall(
+    `/api/method/boardgame_cafe.api.get_table_qr?table=${encodeURIComponent(table)}`,
     "GET",
     null,
     apiKey,

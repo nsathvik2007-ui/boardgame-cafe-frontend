@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getMenuItems, placeFoodOrder, getStoredAuth } from '../api';
+import { getMenuItems, placeFoodOrder, getSession, getStoredAuth } from '../api';
+import CafeBackground from '../components/CafeBackground';
 
 export default function FoodPage() {
   const [items, setItems] = useState([]);
@@ -9,15 +10,24 @@ export default function FoodPage() {
   const [placing, setPlacing] = useState(false);
   const [toast, setToast] = useState('');
   const [session, setSession] = useState(null);
+  const [table, setTable] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setSession(params.get('session'));
+    const sessionId = params.get('session');
+    setSession(sessionId);
+    setTable(params.get('table'));
 
     const { apiKey, apiSecret } = getStoredAuth();
     if (!apiKey || !apiSecret) {
       window.location.href = '/login';
       return;
+    }
+
+    if (!params.get('table') && sessionId) {
+      getSession({ sessionId, apiKey, apiSecret })
+        .then((data) => setTable(data.data.table))
+        .catch(() => {});
     }
 
     getMenuItems({ apiKey, apiSecret })
@@ -71,13 +81,22 @@ export default function FoodPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1B4332] to-[#2D6A4F]" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="relative min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <CafeBackground />
       {/* Header */}
-      <div className="bg-[#1B4332] px-6 py-6 text-center border-b border-[#F4A340]/20">
+      <div className="relative bg-[#1B4332] px-6 py-6 text-center border-b border-[#F4A340]/20">
+        {table && (
+          <button
+            onClick={() => (window.location.href = `/checkin?table=${table}`)}
+            className="absolute top-6 left-4 flex items-center gap-1.5 text-sm font-medium text-[#FFF8ED]/80 hover:text-[#FFF8ED] transition-colors"
+          >
+            <span className="text-lg leading-none">←</span> Back
+          </button>
+        )}
         <div className="w-12 h-12 mx-auto mb-2 bg-[#F4A340] rounded-xl rotate-12 shadow-lg flex items-center justify-center">
           <div className="w-8 h-8 bg-[#FFF8ED] rounded-md grid grid-cols-3 grid-rows-3 gap-0.5 p-1 -rotate-12">
             {[1, 0, 1, 0, 1, 0, 1, 0, 1].map((active, i) => (
-              <span key={i} className={`rounded-full ${active ? 'bg-[#D64550]' : ''}`} />
+              <span key={i} className={`rounded-full ${active ? 'bg-[#FF5A3C] shadow-[0_0_2px_rgba(255,90,60,0.6)]' : ''}`} />
             ))}
           </div>
         </div>

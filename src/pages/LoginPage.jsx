@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { signup, login, storeAuth } from '../api';
+import { signup, login, storeAuth, storeIsStaff } from '../api';
+import CafeBackground from '../components/CafeBackground';
 
 export default function LoginPage() {
   const [mode, setMode] = useState('login');
@@ -51,7 +52,16 @@ export default function LoginPage() {
       }
 
       storeAuth(payload.api_key, payload.api_secret);
-      window.location.href = table ? `/checkin?table=${table}` : '/checkin';
+
+      const roles = payload.roles || [];
+      const isStaff = payload.user === 'Administrator' || roles.includes('Cafe Staff');
+      storeIsStaff(isStaff);
+
+      if (isStaff) {
+        window.location.href = '/staff';
+      } else {
+        window.location.href = table ? `/checkin?table=${table}` : '/checkin';
+      }
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
@@ -62,122 +72,159 @@ export default function LoginPage() {
   const holes = Array.from({ length: 18 });
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-10"
-      style={{
-        backgroundColor: '#0F1035',
-        backgroundImage:
-          'radial-gradient(circle at 20% 20%, rgba(242,183,5,0.08) 0%, transparent 45%), radial-gradient(circle at 80% 80%, rgba(176,32,42,0.10) 0%, transparent 45%)',
-      }}
-    >
-      <div className="box-settle w-full max-w-md">
+    <div className="relative min-h-screen flex items-center justify-center px-4 py-10">
+      <CafeBackground />
+      <div className="box-settle w-full max-w-md relative">
         {/* BOX LID */}
         <div
           className="rounded-t-2xl px-8 pt-10 pb-8 relative overflow-hidden"
-          style={{ backgroundColor: '#1A1B4B' }}
+          style={{ backgroundColor: '#1B4332' }}
         >
-          {/* corner stamp */}
+          {/* dot-grid texture, matches the site background */}
           <div
-            className="absolute top-5 right-5 w-12 h-12 rounded-full border-2 flex items-center justify-center text-center z-10"
-            style={{ borderColor: '#F2B705' }}
-          >
-            <span
-              className="text-[8px] leading-tight tracking-wider"
-              style={{ color: '#F2B705', fontFamily: "'Space Mono', monospace" }}
+            className="absolute inset-0 opacity-[0.18]"
+            style={{
+              backgroundImage: 'radial-gradient(circle, #F4A340 1px, transparent 1px)',
+              backgroundSize: '18px 18px',
+            }}
+          />
+
+          {/* warm glow behind the title */}
+          <div
+            className="absolute -top-16 -left-10 w-72 h-72 rounded-full pointer-events-none"
+            style={{ background: 'radial-gradient(circle, rgba(244,163,64,0.20) 0%, transparent 70%)' }}
+          />
+
+          {/* corner ribbon banner */}
+          <div className="absolute top-0 right-0 w-32 h-32 overflow-hidden pointer-events-none z-10">
+            <div
+              className="absolute shadow-md flex items-center justify-center"
+              style={{
+                top: 24,
+                right: -52,
+                width: 200,
+                padding: '5px 0',
+                backgroundColor: '#F4A340',
+                transform: 'rotate(45deg)',
+              }}
             >
-              EST.<br />2026
-            </span>
+              <span
+                className="text-[10px] font-bold tracking-[0.2em]"
+                style={{ color: '#1B4332', fontFamily: "'Space Mono', monospace" }}
+              >
+                EST. 2026
+              </span>
+            </div>
           </div>
 
           <p
-            className="text-xs tracking-[0.3em] uppercase mb-3"
-            style={{ color: '#F2B705', fontFamily: "'Space Mono', monospace" }}
+            className="text-xs tracking-[0.3em] uppercase mb-3 relative z-10"
+            style={{ color: '#F4A340', fontFamily: "'Space Mono', monospace" }}
           >
             A Table Game Experience
           </p>
 
           <h1
-            className="text-5xl mb-4 pr-14"
-            style={{ color: '#FCF6E8', fontFamily: "'Anton', sans-serif", letterSpacing: '0.01em', lineHeight: 1 }}
+            className="text-5xl mb-4 pr-14 relative z-10"
+            style={{ fontFamily: "'Anton', sans-serif", letterSpacing: '0.01em', lineHeight: 1 }}
           >
-            <span className="block">BOARDGAME</span>
-            <span className="block mt-2.5">CAFÉ</span>
+            <span className="block" style={{ color: '#FFF8ED' }}>BOARDGAME</span>
+            <span className="block mt-2.5" style={{ color: '#F4A340' }}>CAFÉ</span>
           </h1>
 
-          <p className="text-sm max-w-[70%] relative z-10" style={{ color: '#C9CAE8', fontFamily: "'Karla', sans-serif" }}>
+          <p className="text-sm max-w-[70%] relative z-10" style={{ color: 'rgba(255,248,237,0.75)', fontFamily: "'Karla', sans-serif" }}>
             Pull up a chair. Pick your game. We'll keep score.
           </p>
 
           {/* Spec strip, like a box-back panel */}
-          <div
-            className="mt-6 flex flex-wrap gap-x-4 gap-y-1.5 pt-4 border-t relative z-10"
-            style={{ borderColor: 'rgba(252,246,232,0.15)' }}
-          >
-            {['PARTY: 1–8', 'SESSION: YOU DECIDE', 'SKILL: ALL WELCOME'].map((spec) => (
-              <span
-                key={spec}
-                className="text-[10px] tracking-wider uppercase"
-                style={{ color: '#8E90C4', fontFamily: "'Space Mono', monospace" }}
-              >
-                {spec}
-              </span>
-            ))}
+          <div className="mt-6 relative z-10">
+            <div className="flex items-center gap-2">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <span
+                  key={i}
+                  className="rounded-full"
+                  style={{
+                    width: i === 2 ? 5 : 4,
+                    height: i === 2 ? 5 : 4,
+                    backgroundColor: '#F4A340',
+                    opacity: i === 2 ? 0.9 : 0.35,
+                  }}
+                />
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-4">
+              {['PARTY: 1–8', 'SESSION: YOU DECIDE', 'SKILL: ALL WELCOME'].map((spec) => (
+                <span
+                  key={spec}
+                  className="text-[10px] tracking-wider uppercase"
+                  style={{ color: 'rgba(255,248,237,0.55)', fontFamily: "'Space Mono', monospace" }}
+                >
+                  {spec}
+                </span>
+              ))}
+            </div>
           </div>
 
           {table && (
             <div
               className="mt-5 inline-block px-3 py-1.5 rounded-full text-xs font-bold tracking-wide relative z-10"
-              style={{ backgroundColor: '#F2B705', color: '#1A1B4B', fontFamily: "'Space Mono', monospace" }}
+              style={{ backgroundColor: '#F4A340', color: '#1B4332', fontFamily: "'Space Mono', monospace" }}
             >
               TABLE {table} · CHECKING IN
             </div>
           )}
 
-          {/* Engraved-line illustration: die + meeple, bleeding off the corner */}
+          {/* Hero illustration: the classic Wikimedia/Cburnett chess knight (CC-BY-SA/GFDL), recolored to theme */}
           <svg
-            viewBox="0 0 140 140"
-            className="absolute -bottom-4 -right-4 w-36 h-36 opacity-80 pointer-events-none"
-            style={{ color: '#F2B705' }}
+            viewBox="0 0 45 45"
+            className="absolute bottom-20 -right-2 w-44 h-44 pointer-events-none z-10"
           >
-            {/* isometric die */}
-            <g stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round">
-              <path d="M35 38 L62 24 L89 38 L62 52 Z" />
-              <path d="M35 38 L35 68 L62 82 L62 52 Z" />
-              <path d="M89 38 L89 68 L62 82 L62 52 Z" />
-              {/* pips, top face */}
-              <circle cx="62" cy="38" r="2.1" fill="currentColor" stroke="none" />
-              <circle cx="50" cy="33" r="2.1" fill="currentColor" stroke="none" />
-              <circle cx="74" cy="43" r="2.1" fill="currentColor" stroke="none" />
-              {/* shading hatch, left face */}
-              <path d="M39 44 L46 48 M39 51 L46 55 M39 58 L46 62" strokeWidth="1" opacity="0.55" />
-            </g>
-            {/* meeple */}
-            <g stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round" strokeLinecap="round" opacity="0.9">
-              <path d="M108 18c6 0 10 4.5 10 10 0 3.8-2.2 7-5.4 8.6l10.6 9.2c3.8 3.8 6 9 6 14.4l-3.8 15.2h-6.8l-2.3 12.8h-16.6l-2.3-12.8h-6.8L94.6 60.2c0-5.4 2.2-10.6 6-14.4l10.6-9.2c-3.2-1.6-5.4-4.8-5.4-8.6 0-5.5 4-10 10-10z" />
+            <g style={{ fill: 'none', fillRule: 'evenodd', strokeLinecap: 'round', strokeLinejoin: 'round' }} transform="translate(0,0.3)">
+              <path
+                d="M 22,10 C 32.5,11 38.5,18 38,39 L 15,39 C 15,30 25,32.5 23,18"
+                style={{ fill: '#F4A340', stroke: '#F4A340', strokeWidth: 1.5 }}
+              />
+              <path
+                d="M 24,18 C 24.38,20.91 18.45,25.37 16,27 C 13,29 13.18,31.34 11,31 C 9.958,30.06 12.41,27.96 11,28 C 10,28 11.19,29.23 10,30 C 9,30 5.997,31 6,26 C 6,24 12,14 12,14 C 12,14 13.89,12.1 14,10.5 C 13.27,9.506 13.5,8.5 13.5,7.5 C 14.5,6.5 16.5,10 16.5,10 L 18.5,10 C 18.5,10 19.28,8.008 21,7 C 22,7 22,10 22,10"
+                style={{ fill: '#F4A340', stroke: '#F4A340', strokeWidth: 1.5 }}
+              />
+              <path
+                d="M 9.5 25.5 A 0.5 0.5 0 1 1 8.5,25.5 A 0.5 0.5 0 1 1 9.5 25.5 z"
+                style={{ fill: '#1B4332', stroke: '#1B4332', strokeWidth: 1.5 }}
+              />
+              <path
+                d="M 15 15.5 A 0.5 1.5 0 1 1  14,15.5 A 0.5 1.5 0 1 1  15 15.5 z"
+                transform="matrix(0.866,0.5,-0.5,0.866,9.693,-5.173)"
+                style={{ fill: '#1B4332', stroke: '#1B4332', strokeWidth: 1.5 }}
+              />
+              <path
+                d="M 24.55,10.4 L 24.1,11.85 L 24.6,12 C 27.75,13 30.25,14.49 32.5,18.75 C 34.75,23.01 35.75,29.06 35.25,39 L 35.2,39.5 L 37.45,39.5 L 37.5,39 C 38,28.94 36.62,22.15 34.25,17.66 C 31.88,13.17 28.46,11.02 25.06,10.5 L 24.55,10.4 z"
+                style={{ fill: '#1B4332', stroke: 'none' }}
+              />
             </g>
           </svg>
         </div>
 
         {/* PERFORATED TEAR LINE */}
-        <div className="relative h-4" style={{ backgroundColor: '#1A1B4B' }}>
+        <div className="relative h-4" style={{ backgroundColor: '#1B4332' }}>
           <div
             className="absolute inset-x-0 top-1/2 -translate-y-1/2 border-t-2 border-dashed"
-            style={{ borderColor: '#4A4B7A' }}
+            style={{ borderColor: 'rgba(244,163,64,0.35)' }}
           />
           <div className="absolute inset-0 flex items-center justify-between px-3">
             {holes.map((_, i) => (
               <span
                 key={i}
                 className="w-2.5 h-2.5 rounded-full shrink-0"
-                style={{ backgroundColor: '#0F1035' }}
+                style={{ backgroundColor: 'rgba(11,35,24,0.55)' }}
               />
             ))}
           </div>
         </div>
 
         {/* PUNCH-OUT FORM CARD */}
-        <div className="rounded-b-2xl px-8 pb-8 pt-6 shadow-2xl" style={{ backgroundColor: '#FCF6E8' }}>
-          <div className="flex rounded-lg overflow-hidden border-2 mb-6" style={{ borderColor: '#1A1B4B' }}>
+        <div className="rounded-b-2xl px-8 pb-8 pt-6 shadow-2xl" style={{ backgroundColor: '#FFF8ED' }}>
+          <div className="flex rounded-lg overflow-hidden border-2 mb-6" style={{ borderColor: '#1B4332' }}>
             {['login', 'signup'].map((m) => (
               <button
                 key={m}
@@ -186,8 +233,8 @@ export default function LoginPage() {
                 className="flex-1 py-2.5 text-sm font-bold tracking-wide uppercase transition-colors"
                 style={{
                   fontFamily: "'Space Mono', monospace",
-                  backgroundColor: mode === m ? '#1A1B4B' : 'transparent',
-                  color: mode === m ? '#FCF6E8' : '#1A1B4B',
+                  backgroundColor: mode === m ? '#1B4332' : 'transparent',
+                  color: mode === m ? '#FFF8ED' : '#1B4332',
                 }}
               >
                 {m === 'login' ? 'Log In' : 'Sign Up'}
@@ -200,7 +247,7 @@ export default function LoginPage() {
               <div>
                 <label
                   className="block text-[11px] font-bold mb-1.5 uppercase tracking-wider"
-                  style={{ color: '#1A1B4B', fontFamily: "'Space Mono', monospace" }}
+                  style={{ color: '#1B4332', fontFamily: "'Space Mono', monospace" }}
                 >
                   Full Name
                 </label>
@@ -210,9 +257,9 @@ export default function LoginPage() {
                   value={form.fullName}
                   onChange={handleChange}
                   placeholder="Alex Rivera"
-                  className="w-full px-4 py-3 rounded-lg border-2 bg-white text-[#1A1B4B] placeholder-[#A8A090] focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 rounded-lg border-2 bg-white text-[#1B4332] placeholder-[#A8A090] focus:outline-none transition-colors"
                   style={{ borderColor: '#E3D9C0' }}
-                  onFocus={(e) => (e.target.style.borderColor = '#F2B705')}
+                  onFocus={(e) => (e.target.style.borderColor = '#F4A340')}
                   onBlur={(e) => (e.target.style.borderColor = '#E3D9C0')}
                 />
               </div>
@@ -221,7 +268,7 @@ export default function LoginPage() {
             <div>
               <label
                 className="block text-[11px] font-bold mb-1.5 uppercase tracking-wider"
-                style={{ color: '#1A1B4B', fontFamily: "'Space Mono', monospace" }}
+                style={{ color: '#1B4332', fontFamily: "'Space Mono', monospace" }}
               >
                 Email
               </label>
@@ -231,9 +278,9 @@ export default function LoginPage() {
                 value={form.email}
                 onChange={handleChange}
                 placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-lg border-2 bg-white text-[#1A1B4B] placeholder-[#A8A090] focus:outline-none transition-colors"
+                className="w-full px-4 py-3 rounded-lg border-2 bg-white text-[#1B4332] placeholder-[#A8A090] focus:outline-none transition-colors"
                 style={{ borderColor: '#E3D9C0' }}
-                onFocus={(e) => (e.target.style.borderColor = '#F2B705')}
+                onFocus={(e) => (e.target.style.borderColor = '#F4A340')}
                 onBlur={(e) => (e.target.style.borderColor = '#E3D9C0')}
               />
             </div>
@@ -241,7 +288,7 @@ export default function LoginPage() {
             <div>
               <label
                 className="block text-[11px] font-bold mb-1.5 uppercase tracking-wider"
-                style={{ color: '#1A1B4B', fontFamily: "'Space Mono', monospace" }}
+                style={{ color: '#1B4332', fontFamily: "'Space Mono', monospace" }}
               >
                 Password
               </label>
@@ -251,9 +298,9 @@ export default function LoginPage() {
                 value={form.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg border-2 bg-white text-[#1A1B4B] placeholder-[#A8A090] focus:outline-none transition-colors"
+                className="w-full px-4 py-3 rounded-lg border-2 bg-white text-[#1B4332] placeholder-[#A8A090] focus:outline-none transition-colors"
                 style={{ borderColor: '#E3D9C0' }}
-                onFocus={(e) => (e.target.style.borderColor = '#F2B705')}
+                onFocus={(e) => (e.target.style.borderColor = '#F4A340')}
                 onBlur={(e) => (e.target.style.borderColor = '#E3D9C0')}
               />
             </div>
@@ -262,7 +309,7 @@ export default function LoginPage() {
               <div>
                 <label
                   className="block text-[11px] font-bold mb-1.5 uppercase tracking-wider"
-                  style={{ color: '#1A1B4B', fontFamily: "'Space Mono', monospace" }}
+                  style={{ color: '#1B4332', fontFamily: "'Space Mono', monospace" }}
                 >
                   Confirm Password
                 </label>
@@ -272,9 +319,9 @@ export default function LoginPage() {
                   value={form.confirmPassword}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 rounded-lg border-2 bg-white text-[#1A1B4B] placeholder-[#A8A090] focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 rounded-lg border-2 bg-white text-[#1B4332] placeholder-[#A8A090] focus:outline-none transition-colors"
                   style={{ borderColor: '#E3D9C0' }}
-                  onFocus={(e) => (e.target.style.borderColor = '#F2B705')}
+                  onFocus={(e) => (e.target.style.borderColor = '#F4A340')}
                   onBlur={(e) => (e.target.style.borderColor = '#E3D9C0')}
                 />
               </div>
@@ -283,7 +330,7 @@ export default function LoginPage() {
             {error && (
               <div
                 className="text-sm px-4 py-2.5 rounded-lg font-medium border-2"
-                style={{ backgroundColor: '#FBEAEA', borderColor: '#B0202A', color: '#B0202A' }}
+                style={{ backgroundColor: '#FBEAEA', borderColor: '#D64550', color: '#D64550' }}
               >
                 {error}
               </div>
@@ -294,13 +341,13 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full font-bold py-3.5 rounded-lg shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 uppercase tracking-wide"
               style={{
-                backgroundColor: loading ? '#8E90C4' : '#B0202A',
-                color: '#FCF6E8',
+                backgroundColor: loading ? '#6B8F7C' : '#D64550',
+                color: '#FFF8ED',
                 fontFamily: "'Space Mono', monospace",
               }}
             >
               {loading ? (
-                <span className="w-5 h-5 border-2 border-[#FCF6E8]/40 border-t-[#FCF6E8] rounded-full animate-spin" />
+                <span className="w-5 h-5 border-2 border-[#FFF8ED]/40 border-t-[#FFF8ED] rounded-full animate-spin" />
               ) : mode === 'login' ? (
                 'Log In'
               ) : (

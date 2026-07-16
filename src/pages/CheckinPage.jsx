@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { checkin, getStoredAuth } from '../api';
+import CafeBackground from '../components/CafeBackground';
 
 export default function CheckinPage() {
   const [status, setStatus] = useState('loading'); // loading | success | error | no-table
   const [session, setSession] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [table, setTable] = useState(null);
+  const requestedRef = useRef(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -23,6 +25,9 @@ export default function CheckinPage() {
       return;
     }
 
+    if (requestedRef.current) return;
+    requestedRef.current = true;
+
     checkin({ table: tableParam, apiKey, apiSecret })
       .then((data) => {
         const payload = data && data.message;
@@ -37,27 +42,15 @@ export default function CheckinPage() {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1B4332] to-[#2D6A4F] flex items-center justify-center px-4">
-      <div
-        className="absolute inset-0 opacity-[0.06]"
-        style={{
-          backgroundImage: 'radial-gradient(circle, #FFF8ED 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
-        }}
-      />
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle, rgba(244,163,64,0.22) 0%, rgba(244,163,64,0.08) 35%, transparent 70%)',
-        }}
-      />
+    <div className="relative min-h-screen flex items-center justify-center px-4">
+      <CafeBackground />
 
       <div className="relative w-full max-w-md bg-[#FFF8ED] rounded-3xl shadow-2xl overflow-hidden">
         <div className="bg-[#1B4332] px-8 pt-10 pb-8 text-center">
           <div className="w-16 h-16 mx-auto mb-3 bg-[#F4A340] rounded-2xl rotate-12 shadow-lg flex items-center justify-center">
             <div className="w-10 h-10 bg-[#FFF8ED] rounded-lg grid grid-cols-3 grid-rows-3 gap-0.5 p-1.5 -rotate-12">
               {[1, 0, 1, 0, 1, 0, 1, 0, 1].map((active, i) => (
-                <span key={i} className={`rounded-full ${active ? 'bg-[#D64550]' : ''}`} />
+                <span key={i} className={`rounded-full ${active ? 'bg-[#FF5A3C] shadow-[0_0_2px_rgba(255,90,60,0.6)]' : ''}`} />
               ))}
             </div>
           </div>
@@ -116,14 +109,14 @@ export default function CheckinPage() {
 
               <div className="space-y-3">
                 <button
-                  onClick={() => (window.location.href = `/games?session=${session.name}`)}
+                  onClick={() => (window.location.href = `/games?session=${session.name}&table=${session.table}`)}
                   className="w-full bg-[#D64550] hover:bg-[#C43A44] text-[#FFF8ED] font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   <span className="text-lg">🎲</span> Browse Games
                 </button>
 
                 <button
-                  onClick={() => (window.location.href = `/food?session=${session.name}`)}
+                  onClick={() => (window.location.href = `/food?session=${session.name}&table=${session.table}`)}
                   className="w-full bg-[#1B4332] hover:bg-[#163a2a] text-[#FFF8ED] font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   <span className="text-lg">🍴</span> Order Food
